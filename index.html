@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Two Player Trivia</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/2.2.1/vue-router.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.3/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <router-view></router-view>
+  </div>
+
+  <script>
+    var state = {
+      playerOne: {
+        score: 0,
+      },
+      playerTwo: {
+        score: 0
+      },
+      selectedQuestion: {},
+      clue: {}
+    }
+  </script>
+
+  <script>
+    var MainMenuScene = Vue.extend({
+      delimiters: ['#{', '}'],
+      data: function () {
+        return {
+          categoryIds: {
+            'General Knowledge': [9],
+            'Science': [17,18],
+            'Geography': [22],
+            'Computers': [19,30],
+            'Animals': [27],
+            'Entertainment': [10,11,12,13,14,15,16,29,31,32],
+            'History': [23]
+          }
+        }
+      },
+      template: '#MainMenuScene',
+      methods: {
+        selectQuestionCategory: function (type) {
+          var categoryId = _.sample(this.categoryIds[type])
+          router.push({
+            path: 'ShowQuestionScene',
+            query: {
+              categoryId: categoryId
+            }
+          })
+        }
+      }
+    })
+  </script>
+  <script type="x-template" id="MainMenuScene">
+    <div class="align-center text-center main-menu-container">
+      <div class="container" style="width: 100%">
+        <div class="categories-container">
+          <button v-on:click="selectQuestionCategory('General Knowledge')" class="btn btn-lg btn-primary btn-block">General Knowledge</button>
+          <button v-on:click="selectQuestionCategory('Science')" class="btn btn-lg btn-primary btn-block">Science</button>
+          <button v-on:click="selectQuestionCategory('Computers')" class="btn btn-lg btn-primary btn-block">Computers</button>
+          <button v-on:click="selectQuestionCategory('Geography')" class="btn btn-lg btn-primary btn-block">Geography</button>
+          <button v-on:click="selectQuestionCategory('Animals')" class="btn btn-lg btn-primary btn-block">Animals</button>
+          <button v-on:click="selectQuestionCategory('Entertainment')" class="btn btn-lg btn-primary btn-block">Entertainment</button>
+          <button v-on:click="selectQuestionCategory('History')" class="btn btn-lg btn-primary btn-block">History</button>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script>
+    var ShowQuestionScene = Vue.extend({
+      delimiters: ['#{', '}'],
+      data: function () {
+        state.playerOne.correct = false
+        state.playerOne.disabled = false
+        state.playerTwo.correct = false
+        state.playerTwo.disabled = false
+        return {
+          playerOne: _.extend(state.playerOne),
+          playerTwo: _.extend(state.playerTwo),
+          shuffledAnswers: [],
+          selectedQuestion: null
+        }
+      },
+      beforeCreate: function () {
+        var self = this
+        axios.get('https://opentdb.com/api.php?amount=1&category=' + this.$route.query.categoryId + '&type=multiple')
+          .then(function (response) {
+            self.selectedQuestion = state.selectedQuestion = response.data.results[0]
+            self.shuffledAnswers = _.shuffle(self.selectedQuestion.incorrect_answers.concat([self.selectedQuestion.correct_answer]))
+            console.log(self.selectedQuestion.correct_answer)
+          })
+      },
+      methods: {
+        checkAnswer: function (answer, playerId) {
+          var oppositePlayerId = playerId === 'One'
+            ? 'One'
+            : 'Two'
+
+          if (this['player' + playerId].disabled) return
+
+          if (this.selectedQuestion.correct_answer === answer) {
+            this['player' + oppositePlayerId].disabled = true
+            state['player' + playerId].correct = true
+            state['player' + playerId].score++
+            router.push({
+              path: 'WinnerScene',
+              query: {
+                categoryId: this.$route.query.categoryId
+              }
+            })
+            this.$forceUpdate()
+            return
+          }
+
+          this['player' + playerId].disabled = true
+
+          this.$forceUpdate()
+
+          if (this.playerOne.disabled && this.playerTwo.disabled) {
+            router.push({
+              path: 'WinnerScene',
+              query: {
+                categoryId: this.$route.query.categoryId
+              }
+            })
+          }
+        }
+      },
+      template: '#ShowQuestionScene'
+    })
+  </script>
+  <script type="x-template" id="ShowQuestionScene">
+    <div>
+      <div class="upper-half align-center question-container">
+        <div class="container question-content text-center">
+          <h2 v-if="selectedQuestion" v-html="selectedQuestion.question"></h2>
+          <button
+            class="btn btn-lg btn-primary btn-block"
+            v-bind:class="{ disabled: playerTwo.disabled }"
+            v-on:click="checkAnswer(answer, 'Two')"
+            v-for="answer in shuffledAnswers"
+            v-html="answer"
+          ></button>
+        </div>
+      </div>
+      <div class="lower-half align-center question-container">
+        <div class="container question-content text-center">
+          <h2 v-if="selectedQuestion" v-html="selectedQuestion.question"></h2>
+          <button
+            class="btn btn-lg btn-primary btn-block"
+            v-bind:class="{ disabled: playerOne.disabled }"
+            v-on:click="checkAnswer(answer, 'One')"
+            v-for="answer in shuffledAnswers"
+            v-html="answer"
+          ></button>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script>
+    var WinnerScene = Vue.extend({
+      delimiters: ['#{', '}'],
+      data: function () {
+        return {
+          playerOne: _.extend(state.playerOne),
+          playerTwo: _.extend(state.playerTwo)
+        }
+      },
+      created: function () {
+        var self = this
+        setTimeout(function() {
+          if (state.playerOne.score >= 6 || state.playerTwo.score >= 6) {
+            state.playerOne = {
+              score: 0,
+              correct: false
+            }
+            state.playerTwo = {
+              score: 0,
+              correct: false
+            }
+            state.selectedQuestion = {}
+            router.push('/')
+            return
+          }
+
+          router.push({
+              path: 'ShowQuestionScene',
+              query: {
+                categoryId: self.$route.query.categoryId
+              }
+            })
+        }, 2000)
+      },
+      template: '#WinnerScene'
+    })
+  </script>
+  <script type="x-template" id="WinnerScene">
+    <div>
+      <div class="upper-half align-center">
+        <div v-if="playerTwo.score < 6 && playerTwo.correct" class="text-center align-center correct-container">
+            <h2>#{playerTwo.score}/6</h2>
+        </div>
+        <div v-if="playerTwo.score < 6 && !playerTwo.correct" class="text-center align-center incorrect-container">
+          <h2>I'm sure you tried very hard...</h2>
+        </div>
+        <div v-if="playerOne.score >= 6">
+          <h1>Player One Won!</h1>
+        </div>
+        <div v-if="playerTwo.score >= 6">
+          <h1>Player Two Won!</h1>
+        </div>
+      </div>
+      <div class="lower-half align-center">
+        <div v-if="playerOne.score < 6 && playerOne.correct" class="text-center align-center correct-container">
+            <h2>#{playerOne.score}/6</h2>
+        </div>
+        <div v-if="playerOne.score < 6 && !playerOne.correct" class="text-center align-center incorrect-container">
+          <h2>I'm sure you tried very hard...</h2>
+        </div>
+        <div v-if="playerOne.score >= 6">
+          <h1>Player One Won!</h1>
+        </div>
+        <div v-if="playerTwo.score >= 6">
+          <h1>Player One Won!</h1>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script>
+    var routes = [
+      { path: '/', component: MainMenuScene }, // Select category
+      { path: '/ShowQuestionScene', component: ShowQuestionScene }, // Show question and buzz in button
+      { path: '/WinnerScene', component: WinnerScene }
+    ]
+
+    var router = new VueRouter({
+      routes: routes
+    })
+
+    var app = new Vue({
+      router
+    }).$mount('#app')
+  </script>
+</body>
+</html>
