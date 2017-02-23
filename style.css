@@ -192,7 +192,10 @@ body {
     font-size: 16px;
   }
 
-  .panel-content button {
+  .panel-container button,
+  .panel-container button:active,
+  .panel-container button:focus,
+  .panel-container button:hover {
     font-size: 16px;
     width: 80%;
   }

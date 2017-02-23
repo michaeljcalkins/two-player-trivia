@@ -89,7 +89,7 @@ export default {
           type: self.$route.query.type
         }
       })
-    }, 300000)
+    }, 3000)
   },
   computed: {
     playerOneWon: function () {
