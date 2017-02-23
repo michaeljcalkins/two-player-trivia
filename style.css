@@ -54,23 +54,33 @@ body {
 }
 
 .main-menu-container {
-  background: url(images/categories-panel.png) center no-repeat;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
   position: absolute;
+  bottom: 0;
   left: 0;
   right: 0;
-  bottom: 0;
   top: 0;
 }
 
-.categories-container {
-  max-width: 520px;
-  margin: 95px auto 0;
+.main-menu-content {
+  background: url(images/categories-panel.png) center no-repeat;
+  background-size: contain;
+  width: 100%;
+  max-width: 590px;
+  height: 100%;
+  text-align: center;
 }
 
-.categories-container button,
-.categories-container button:active,
-.categories-container button:focus,
-.categories-container button:hover {
+.main-menu-content > div {
+  margin: 90px auto 0;
+}
+
+.main-menu-content button,
+.main-menu-content button:active,
+.main-menu-content button:focus,
+.main-menu-content button:hover {
   box-shadow: none;
   color: white;
   outline: none;
@@ -79,7 +89,7 @@ body {
   background-color: none;
   background-size: contain;
   text-shadow: 1px 1px 2px #3a230a;
-  width: 481px;
+  width: 90%;
   height: 80px;
   border: 0;
   font-size: 30px;
@@ -140,4 +150,65 @@ body {
 .quit-button img {
   height: 50px;
   width: 50px;
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width : 1200px) {
+
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 992px) {
+
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 480px) {
+  .main-menu-content {
+    width: 95%;
+  }
+
+  .main-menu-content > div {
+    margin: 80px auto 0;
+  }
+
+  .main-menu-content button {
+    font-size: 18px;
+    height: 60px;
+    width: 80%;
+  }
+
+  .panel-content h1 {
+    font-size: 18px;
+    margin: 0 0 10px;
+  }
+
+  .panel-content h2 {
+    font-size: 16px;
+  }
+
+  .panel-content button {
+    font-size: 16px;
+    width: 80%;
+  }
+
+  .quit-button img {
+    height: 35px;
+    width: 35px;
+  }
+
+  .panel-content img {
+    max-width: 60%;
+    margin-bottom: 10px;
+  }
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width : 320px) {
+
 }

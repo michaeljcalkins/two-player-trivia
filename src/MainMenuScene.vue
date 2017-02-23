@@ -1,7 +1,7 @@
 <template>
-  <div class="align-center text-center main-menu-container">
-    <div class="container" style="width: 100%">
-      <div class="categories-container">
+  <div class="align-center main-menu-container">
+    <div class="main-menu-content align-center">
+      <div>
         <button v-on:click="selectQuestionCategory('General Knowledge')">General Knowledge</button>
         <button v-on:click="selectQuestionCategory('Science')">Science</button>
         <button v-on:click="selectQuestionCategory('Geography')">Geography</button>
